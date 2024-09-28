@@ -7,7 +7,7 @@ This example shows how to run Dapr in CSharp with Kafka and Minimal APIs.
 First, make sure you have Docker installed so you can run Kafka locally.
 
 ```bash
-docker compose -f dapr-csharp-kafka.yml up
+docker compose -f docker-compose.yml up
 ```
 
 ### Run the subscriber
