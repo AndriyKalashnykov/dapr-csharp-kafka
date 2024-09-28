@@ -11,8 +11,8 @@ internal class Program
         using var client = new DaprClientBuilder().Build();
 
         var eventData = new { Id = "17" };
-        await client.PublishEventAsync("mypubsub", "deposit", eventData);
-        Console.WriteLine("Published deposit event!");
+        await client.PublishEventAsync("mypubsub", "event", eventData);
+        Console.WriteLine("Published event!");
 
         return 0;
     }

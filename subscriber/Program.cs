@@ -6,7 +6,7 @@ app.UseCloudEvents();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapPost("/deposit", (Deposit deposit) =>
+app.MapPost("/event", (EventData deposit) =>
 {
     Console.WriteLine(deposit.Id);
     return Results.Ok();
@@ -14,4 +14,4 @@ app.MapPost("/deposit", (Deposit deposit) =>
 
 app.Run();
 
-public record Deposit([property: JsonPropertyName("Id")] string Id);
+public record EventData([property: JsonPropertyName("Id")] string Id);
