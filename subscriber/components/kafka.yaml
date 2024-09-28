@@ -6,7 +6,7 @@ spec:
   type: pubsub.kafka
   version: v1
   metadata:
-  - name: brokers
-    value: "localhost:9092"
-  - name: authType
-    value: "none"
+    - name: brokers
+      value: "localhost:9092"
+    - name: authType
+      value: "none"

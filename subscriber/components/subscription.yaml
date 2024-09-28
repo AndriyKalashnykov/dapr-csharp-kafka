@@ -8,4 +8,4 @@ spec:
     default: /deposit
   pubsubname: mypubsub
 scopes:
-- subscriber
+  - subscriber
