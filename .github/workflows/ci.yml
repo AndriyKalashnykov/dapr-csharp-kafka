@@ -29,7 +29,7 @@ jobs:
           echo "Using .NET SDK ${ver}.x"
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
         with:
           dotnet-version: ${{ steps.sdk.outputs.sdk }}
 
