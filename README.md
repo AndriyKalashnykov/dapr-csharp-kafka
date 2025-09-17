@@ -30,6 +30,11 @@ In your subscriber app you should see:
 == APP == Id=8beb4163-1548-43ea-bea3-7726bc584131, Data=2025-09-17T12:28:31.2696216Z
 ```
 
+links
+* [Dapr Console](http://localhost:8080/overview)
+* [Zipkin Console](http://127.0.0.1:9411/zipkin/)
+
+
 ### References
 
 * [Dapr Globo Tickets .NET Example](https://github.com/XpiritBV/azure-container-apps-workshop/tree/main/src/globo-tickets-dapr)

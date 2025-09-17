@@ -51,6 +51,8 @@ services:
     image: daprio/dapr:${DAPR_VERSION}
     container_name: ${DAPR_PLACEMENT_CONTAINER}
     restart: unless-stopped
+    env_file:
+      - ".env"
     command: >
       ./placement
       --log-level=${DAPR_LOG_LEVEL}
@@ -76,6 +78,8 @@ services:
     image: daprio/dapr:${DAPR_VERSION}
     container_name: ${DAPR_SCHEDULER_CONTAINER}
     restart: unless-stopped
+    env_file:
+      - ".env"
     command: >
       ./scheduler
       --log-level=${DAPR_LOG_LEVEL}
@@ -107,6 +111,8 @@ services:
     image: openzipkin/zipkin:${DAPR_ZIPKIN_VERSION:-latest}
     container_name: ${DAPR_ZIPKIN_CONTAINER:-dapr-zipkin}
     restart: unless-stopped
+    env_file:
+      - ".env"
     ports:
       - "${DAPR_ZIPKIN_PORT:-9411}:9411"
     networks:
@@ -122,11 +128,40 @@ services:
       timeout: 10s
       retries: 3
       
-  redis:
-    container_name: "redis"
-    image: "redis:6.2-alpine"
+  redis-pubsub:
+    image: redis:7.0-alpine
+    container_name: redis-pubsub
+    restart: unless-stopped
+    env_file:
+      - ".env"
     ports:
-      - "6379"
+      - "${REDIS_HOST_PORT}:6379"
+    networks:
+      - dapr-csharp-net
+    volumes:
+      - redis-data:/data
+    command: [ "redis-server", "--requirepass", "${REDIS_SERVER_PASSWORD:-dapr_redis}", "--appendonly", "yes" ]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_SERVER_PASSWORD:-dapr_redis}", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      
+  dapr-dashboard:
+    image: "daprio/dashboard:latest"
+    env_file:
+      - ".env"
+    command: [ "--docker-compose=true",
+               "--components-path=/home/nonroot/components",
+               "--config-path=/home/nonroot/configuration",
+               "--docker-compose-path=/home/nonroot/docker-compose.yml" ]
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./dockercompose/dapr/components/:/home/nonroot/components"
+      - "./dockercompose/dapr/config/:/home/nonroot/configuration"
+      - ./docker-compose.yml:/home/nonroot/docker-compose.yml
+      - .env:/home/nonroot/.env
     networks:
       - dapr-csharp-net
   
@@ -267,3 +302,4 @@ volumes:
   dapr-zipkin-data:
     driver: local
     name: ${DAPR_ZIPKIN_VOLUME:-dapr-zipkin-data}
+  redis-data:
