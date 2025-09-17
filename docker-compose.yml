@@ -122,31 +122,39 @@ services:
       timeout: 10s
       retries: 3
       
-  # Dapr sidecar for .NET Dapr Client API
-  dotnet-dapr-client-sidecar:
-    image: ghcr.io/dapr/daprd:${DAPR_VERSION}
-    container_name: dotnet-dapr-client-sidecar
-    command: [
-      "./daprd",
-      "--log-level", "debug",
-      "--app-id", "dotnet-dapr-client",
-      "--app-port", "${DOT_NET_APP_PORT}",
-      "--dapr-http-port", "${DOT_NET_HTTP_PORT}",
-      "--dapr-grpc-port", "${DOT_NET_GRPC_PORT}",
-      "--placement-host-address", "dapr-placement:${DAPR_PLACEMENT_PORT}",
-      "--scheduler-host-address", "dapr-scheduler:${DAPR_SCHEDULER_PORT}",
-      "--resources-path", "/components",
-      "--config", "/components/config.yaml"
-    ]
-    environment:
-      - DAPR_COMPONENTS_SOCKETS_FOLDER=/var/run
-    volumes:
-      - "./components:/components:ro"
+  redis:
+    container_name: "redis"
+    image: "redis:6.2-alpine"
     ports:
-      - "${DOT_NET_HTTP_PORT}:${DOT_NET_HTTP_PORT}"
-      - "${DOT_NET_GRPC_PORT}:${DOT_NET_GRPC_PORT}"
+      - "6379"
     networks:
       - dapr-csharp-net
+  
+  # Dapr sidecar for .NET Dapr Client API
+#  dotnet-dapr-client-sidecar:
+#    image: ghcr.io/dapr/daprd:${DAPR_VERSION}
+#    container_name: dotnet-dapr-client-sidecar
+#    command: [
+#      "./daprd",
+#      "--log-level", "debug",
+#      "--app-id", "dotnet-dapr-client",
+#      "--app-port", "${DOT_NET_APP_PORT}",
+#      "--dapr-http-port", "${DOT_NET_HTTP_PORT}",
+#      "--dapr-grpc-port", "${DOT_NET_GRPC_PORT}",
+#      "--placement-host-address", "dapr-placement:${DAPR_PLACEMENT_PORT}",
+#      "--scheduler-host-address", "dapr-scheduler:${DAPR_SCHEDULER_PORT}",
+#      "--resources-path", "/components",
+#      "--config", "/components/config.yaml"
+#    ]
+#    environment:
+#      - DAPR_COMPONENTS_SOCKETS_FOLDER=/var/run
+#    volumes:
+#      - "./components:/components:ro"
+#    ports:
+#      - "${DOT_NET_HTTP_PORT}:${DOT_NET_HTTP_PORT}"
+#      - "${DOT_NET_GRPC_PORT}:${DOT_NET_GRPC_PORT}"
+#    networks:
+#      - dapr-csharp-net
   
 #  subscriber-image:
 #    build: ./subscriber
@@ -217,23 +225,23 @@ services:
 #      - ./subscriber/components:/components:ro
 #    depends_on: [kafka, subscriber]
 #
-  publisher:
-    build: ./publisher
-    container_name: publisher
-
-  publisher-daprd:
-    networks:
-      - dapr-csharp-net
-    image: "daprio/daprd:latest"
-    container_name: publisher-daprd
-    command: [
-      "./daprd",
-      "--app-id", "publisher",
-      "--resources-path", "/components",
-      "--log-level", "debug"
-    ]
-    volumes:
-      - ./publisher/components:/components:ro
+#  publisher:
+#    build: ./publisher
+#    container_name: publisher
+#
+#  publisher-daprd:
+#    networks:
+#      - dapr-csharp-net
+#    image: "daprio/daprd:latest"
+#    container_name: publisher-daprd
+#    command: [
+#      "./daprd",
+#      "--app-id", "publisher",
+#      "--resources-path", "/components",
+#      "--log-level", "debug"
+#    ]
+#    volumes:
+#      - ./publisher/components:/components:ro
 #    depends_on: [kafka, publisher]
 
 #networks:

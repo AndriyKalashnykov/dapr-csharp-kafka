@@ -64,6 +64,11 @@ runall: build-images
 stopall:
 	docker compose --file docker-compose.yml down
 
+#stop-local-dapr: @Stop local dapr
+stop-local-dapr:
+	docker stop redis dapr-scheduler dapr-placement dapr_redis dapr_zipkin
+
+
 # upgrade outdated https://github.com/NuGet/Home/issues/4103
 #upgrade: @ Upgrade outdated packages
 upgrade:
