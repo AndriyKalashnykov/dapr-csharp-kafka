@@ -29,3 +29,7 @@ In your subscriber app you should see:
 ```bash
 == APP == Id=8beb4163-1548-43ea-bea3-7726bc584131, Data=2025-09-17T12:28:31.2696216Z
 ```
+
+### References
+
+* [DAPR .NET Examples + Docker Compose](https://github.com/Sen-Gupta/nebulagraph/tree/main/src/examples)
