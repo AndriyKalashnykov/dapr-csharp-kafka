@@ -32,4 +32,5 @@ In your subscriber app you should see:
 
 ### References
 
+* [Dapr Globo Tickets .NET Example](https://github.com/XpiritBV/azure-container-apps-workshop/tree/main/src/globo-tickets-dapr)
 * [DAPR .NET Examples + Docker Compose](https://github.com/Sen-Gupta/nebulagraph/tree/main/src/examples)
