@@ -24,7 +24,7 @@ jobs:
             echo "Failed to read <TargetFramework> from publisher/publisher.csproj"
             exit 1
           fi
-          ver="${tfm#net}"           # e.g., net9.0 -> 9.0
+          ver="${tfm#net}" # e.g., net9.0 -> 9.0
           echo "sdk=${ver}.x" >> "$GITHUB_OUTPUT"
           echo "Using .NET SDK ${ver}.x"
 
@@ -33,9 +33,10 @@ jobs:
         with:
           dotnet-version: ${{ steps.sdk.outputs.sdk }}
 
-      # Now you can restore/build/test
       - name: Restore
-        run: dotnet restore
+        run: |
+          dotnet restore ./publisher/publisher.csproj
+          dotnet restore ./subscriber/subscriber.csproj
 
       - name: Build
         run: make build
