@@ -35,13 +35,21 @@ release:
 version:
 	@echo $(shell git describe --tags --abbrev=0)
 
+#runk: @ Run Kafka
+runk:
+	@ docker compose up -d
+
+#stopk: @ Stop Kafka
+stopk:
+	@ docker compose down
+
 #runp: @ Run publisher
 runp: build
-	dotnet run --project publisher/publisher.csproj $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/kafka.properties
+	dapr run --app-id publisher --app-port 6141 --components-path ./publisher/components -- dotnet run --project ./publisher/publisher.csproj
 
 #runs: @ Run subscriber
 runs: build
-	dotnet run --project subscriber/subscriber.csproj $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/kafka.properties
+	dapr run --app-id subscriber --app-port 5141 --components-path ./subscriber/components -- dotnet run --project ./subscriber/subscriber.csproj
 
 # upgrade outdated https://github.com/NuGet/Home/issues/4103
 #upgrade: @ Upgrade outdated packages
