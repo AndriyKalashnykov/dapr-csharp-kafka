@@ -42,7 +42,7 @@ build-images:
 
 #runk: @ Run Kafka
 runk:
-	@ docker compose --file docker-compose-kafka.yml up  -d 
+	@ docker compose --file docker-compose-kafka.yml up 
 
 #stopk: @ Stop Kafka
 stopk:
@@ -50,20 +50,19 @@ stopk:
 
 #runp: @ Run publisher
 runp: build
-	dapr run --app-id publisher --app-port 6141 --components-path ./publisher/components -- dotnet run --project ./publisher/publisher.csproj
+	dapr run --app-id publisher --app-port 6141 --resources-path ./publisher/components -- dotnet run --project ./publisher/publisher.csproj
 
 #runs: @ Run subscriber
 runs: build
-	dapr run --app-id subscriber --app-port 5141 --components-path ./subscriber/components -- dotnet run --project ./subscriber/subscriber.csproj
+	dapr run --app-id subscriber --app-port 5141 --resources-path ./subscriber/components -- dotnet run --project ./subscriber/subscriber.csproj
 
 #runall: @ Run Kafka + Publisher + Consumer
-runall:
-	docker compose build
-	docker compose up
+runall: build-images
+	docker compose --file docker-compose.yml up
 
 #stopall: @ Stop Kafka + Publisher + Consumer
 stopall:
-	docker compose down --remove-orphans --volumes
+	docker compose --file docker-compose.yml down
 
 # upgrade outdated https://github.com/NuGet/Home/issues/4103
 #upgrade: @ Upgrade outdated packages

@@ -18,7 +18,7 @@ RUN dotnet publish "publisher.csproj" --no-restore -c Release -o /app/publish /p
 # https://mcr.microsoft.com/en-us/artifact/mar/dotnet/aspnet/tags
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:8080
+#ENV ASPNETCORE_URLS=http://+:8080
 RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/* \
  && curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | /bin/bash \
  && mv /usr/local/bin/daprd /usr/local/bin/daprd-bin || true

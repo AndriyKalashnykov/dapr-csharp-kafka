@@ -19,9 +19,9 @@ RUN dotnet publish "subscriber.csproj" --no-restore -c Release -o /app/publish /
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080
-RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/* \
- && curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | /bin/bash \
- && mv /usr/local/bin/daprd /usr/local/bin/daprd-bin || true
+#RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/* \
+# && curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | /bin/bash \
+# && mv /usr/local/bin/daprd /usr/local/bin/daprd-bin || true
 COPY --from=publish /app/publish .
 #COPY components /components
 EXPOSE 8080

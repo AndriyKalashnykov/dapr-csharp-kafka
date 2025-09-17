@@ -1,61 +1,229 @@
 services:
   
-  zookeeper:
-    networks:
-      dapr-csharp-net:
-        ipv4_address: ${ZOOKEEPER_HOST_1}
+#  zookeeper:
+#    networks:
+#      - dapr-csharp-net
+#    image: ghcr.io/dapr/3rdparty/zookeeper:latest
+#    ports:
+#      - "2181:2181"
 
-    image: ghcr.io/dapr/3rdparty/zookeeper:latest
+#  kafka:
+#    networks:
+#      - dapr-csharp-net  
+#    image: ghcr.io/dapr/3rdparty/kafka:latest
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+#      KAFKA_CREATE_TOPICS: "sample:1:1"
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#    depends_on: [zookeeper]
+  
+#  zookeeper:
+#    image: confluentinc/cp-zookeeper:7.4.0
+#    container_name: zookeeper
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#      ZOOKEEPER_TICK_TIME: 2000
+#    networks:
+#      - dapr-csharp-net
+#
+#  kafka:
+#    image: confluentinc/cp-kafka:7.4.0
+#    container_name: kafka
+#    depends_on:
+#      - zookeeper
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+#    networks:
+#      - dapr-csharp-net
+  
+  # Dapr Placement Service
+  dapr-placement:
+    image: daprio/dapr:${DAPR_VERSION}
+    container_name: ${DAPR_PLACEMENT_CONTAINER}
+    restart: unless-stopped
+    command: >
+      ./placement
+      --log-level=${DAPR_LOG_LEVEL}
+      --port=${DAPR_PLACEMENT_INTERNAL_PORT}
+      --metrics-port=${DAPR_PLACEMENT_METRICS_PORT}
+      --healthz-port=${DAPR_PLACEMENT_HEALTH_PORT}
     ports:
-      - "2181:2181"
-
-  kafka:
+      - "${DAPR_PLACEMENT_PORT}:${DAPR_PLACEMENT_INTERNAL_PORT}"
+      - "${DAPR_PLACEMENT_METRICS_HOST_PORT}:${DAPR_PLACEMENT_METRICS_PORT}"
+      - "${DAPR_PLACEMENT_HEALTH_HOST_PORT}:${DAPR_PLACEMENT_HEALTH_PORT}"
     networks:
-      dapr-csharp-net:
-        ipv4_address: ${KAFKA_HOST_1}
-        
-    image: ghcr.io/dapr/3rdparty/kafka:latestS
+      - dapr-csharp-net
+    volumes:
+      - dapr-placement-data:/var/run/dapr
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${DAPR_PLACEMENT_HEALTH_PORT}/healthz || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dapr Scheduler Service
+  dapr-scheduler:
+    image: daprio/dapr:${DAPR_VERSION}
+    container_name: ${DAPR_SCHEDULER_CONTAINER}
+    restart: unless-stopped
+    command: >
+      ./scheduler
+      --log-level=${DAPR_LOG_LEVEL}
+      --port=${DAPR_SCHEDULER_INTERNAL_PORT}
+      --metrics-port=${DAPR_SCHEDULER_METRICS_PORT}
+      --healthz-port=${DAPR_SCHEDULER_HEALTH_PORT}
+      --etcd-data-dir=/var/lock/dapr/scheduler
+      --etcd-client-port=${DAPR_ETCD_PORT}
+      --override-broadcast-host-port=localhost:${DAPR_SCHEDULER_PORT}
     ports:
-      - "9092:9092"
+      - "${DAPR_SCHEDULER_PORT}:${DAPR_SCHEDULER_INTERNAL_PORT}"
+      - "${DAPR_SCHEDULER_METRICS_HOST_PORT}:${DAPR_SCHEDULER_METRICS_PORT}"
+      - "${DAPR_SCHEDULER_HEALTH_HOST_PORT}:${DAPR_SCHEDULER_HEALTH_PORT}"
+      - "${DAPR_ETCD_HOST_PORT}:${DAPR_ETCD_PORT}"
+    networks:
+      - dapr-csharp-net
+    volumes:
+      - dapr-scheduler-data:/var/lock
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_HOST_1}
-      KAFKA_CREATE_TOPICS: "sample:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: ${ZOOKEEPER_HOST_1}:2181
-    depends_on: [zookeeper]
+      - ETCD_UNSUPPORTED_ARCH=${DAPR_ETCD_UNSUPPORTED_ARCH:-arm64}
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${DAPR_SCHEDULER_HEALTH_PORT:-8091}/healthz || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Zipkin for Dapr Tracing
+  dapr-zipkin:
+    image: openzipkin/zipkin:${DAPR_ZIPKIN_VERSION:-latest}
+    container_name: ${DAPR_ZIPKIN_CONTAINER:-dapr-zipkin}
+    restart: unless-stopped
+    ports:
+      - "${DAPR_ZIPKIN_PORT:-9411}:9411"
+    networks:
+      - dapr-csharp-net
+    environment:
+      - STORAGE_TYPE=${DAPR_ZIPKIN_STORAGE:-mem}
+      - JAVA_OPTS=${DAPR_ZIPKIN_JAVA_OPTS:--Xms128m -Xmx512m -XX:+ExitOnOutOfMemoryError}
+    volumes:
+      - dapr-zipkin-data:/zipkin/data
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9411/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
       
-  subscriber:
-    build: ./subscriber
-    container_name: subscriber
-    environment:
-      - ASPNETCORE_URLS=http://+:8080
-    expose:
-      - "8080"
-
-  subscriber-daprd:
-    networks:
-      dapr-csharp-net:
-        ipv4_address: ${SUBSCRIBER_HOST_1}
-    image: "daprio/daprd:latest"
-    container_name: subscriber-daprd
+  # Dapr sidecar for .NET Dapr Client API
+  dotnet-dapr-client-sidecar:
+    image: ghcr.io/dapr/daprd:${DAPR_VERSION}
+    container_name: dotnet-dapr-client-sidecar
     command: [
       "./daprd",
-      "--app-id", "subscriber",
-      "--app-port", "8080",
+      "--log-level", "debug",
+      "--app-id", "dotnet-dapr-client",
+      "--app-port", "${DOT_NET_APP_PORT}",
+      "--dapr-http-port", "${DOT_NET_HTTP_PORT}",
+      "--dapr-grpc-port", "${DOT_NET_GRPC_PORT}",
+      "--placement-host-address", "dapr-placement:${DAPR_PLACEMENT_PORT}",
+      "--scheduler-host-address", "dapr-scheduler:${DAPR_SCHEDULER_PORT}",
       "--resources-path", "/components",
-      "--log-level", "debug"
+      "--config", "/components/config.yaml"
     ]
+    environment:
+      - DAPR_COMPONENTS_SOCKETS_FOLDER=/var/run
     volumes:
-      - ./subscriber/components:/components:ro
-    depends_on: [kafka, subscriber]
+      - "./components:/components:ro"
+    ports:
+      - "${DOT_NET_HTTP_PORT}:${DOT_NET_HTTP_PORT}"
+      - "${DOT_NET_GRPC_PORT}:${DOT_NET_GRPC_PORT}"
+    networks:
+      - dapr-csharp-net
+  
+#  subscriber-image:
+#    build: ./subscriber
+#    container_name: subscriber
+#  
+#  # .NET Dapr Subscriber
+#  subscriber-daprd:
+#    build: .
+#    image: subscriber:latest
+#    container_name: dotnet-dapr-subscriber
+#    ports:
+#      - "${DOT_NET_HOST_PORT1}:${DOT_NET_APP_PORT}"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - ASPNETCORE_URLS=http://+:${DOT_NET_APP_PORT}
+#      - DAPR_HTTP_ENDPOINT=http://dotnet-dapr-client-sidecar:${DOT_NET_HTTP_PORT}
+#      - DAPR_GRPC_ENDPOINT=http://dotnet-dapr-client-sidecar:${DOT_NET_GRPC_PORT}
+#    expose:
+#      - "8080"
+#    networks:
+#      - dapr-csharp-net
+#    depends_on: [ kafka, subscriber-image ]
 
+#  publisher-image:
+#    build: ./publisher
+#    container_name: publisher
+#  
+#  # .NET Dapr Publisher
+#  publisher-daprd:
+#    build: .
+#    image: publisher:latest
+#    container_name: dotnet-dapr-publisher
+#    ports:
+#      - "${DOT_NET_HOST_PORT2}:${DOT_NET_APP_PORT}"
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - ASPNETCORE_URLS=http://+:${DOT_NET_APP_PORT}
+#      - DAPR_HTTP_ENDPOINT=http://dotnet-dapr-client-sidecar:${DOT_NET_HTTP_PORT}
+#      - DAPR_GRPC_ENDPOINT=http://dotnet-dapr-client-sidecar:${DOT_NET_GRPC_PORT}
+#    expose:
+#      - "8080"
+#    networks:
+#      - dapr-csharp-net
+#    depends_on: [ publisher-image ]
+
+#  subscriber:
+#    build: ./subscriber
+#    container_name: subscriber
+#    environment:
+#      - ASPNETCORE_URLS=http://+:8080
+#    expose:
+#      - "8080"
+#
+#  subscriber-daprd:
+#    networks:
+#      dapr-csharp-net:
+#        ipv4_address: ${SUBSCRIBER_HOST_1}
+#    image: "daprio/daprd:latest"
+#    container_name: subscriber-daprd
+#    command: [
+#      "./daprd",
+#      "--app-id", "subscriber",
+#      "--app-port", "8080",
+#      "--resources-path", "/components",
+#      "--log-level", "debug"
+#    ]
+#    volumes:
+#      - ./subscriber/components:/components:ro
+#    depends_on: [kafka, subscriber]
+#
   publisher:
     build: ./publisher
     container_name: publisher
 
   publisher-daprd:
     networks:
-      dapr-csharp-net:
-        ipv4_address: ${PUBLISHER_HOST_1}
+      - dapr-csharp-net
     image: "daprio/daprd:latest"
     container_name: publisher-daprd
     command: [
@@ -66,11 +234,28 @@ services:
     ]
     volumes:
       - ./publisher/components:/components:ro
-    depends_on: [kafka, publisher]
+#    depends_on: [kafka, publisher]
+
+#networks:
+#  dapr-csharp-net:
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.28.0.0/16
 
 networks:
   dapr-csharp-net:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.28.0.0/16
+    driver: bridge
+
+
+# Named volumes for persistence
+volumes:
+  dapr-placement-data:
+    driver: local
+    name: ${DAPR_PLACEMENT_VOLUME:-dapr-placement-data}
+  dapr-scheduler-data:
+    driver: local
+    name: ${DAPR_SCHEDULER_VOLUME:-dapr-scheduler-data}
+  dapr-zipkin-data:
+    driver: local
+    name: ${DAPR_ZIPKIN_VOLUME:-dapr-zipkin-data}
