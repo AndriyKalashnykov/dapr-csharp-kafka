@@ -10,15 +10,6 @@ help:
 	@echo "Commands :"
 	@grep -E '[a-zA-Z\.\-]+:.*?@ .*$$' $(MAKEFILE_LIST)| tr -d '#' | awk 'BEGIN {FS = ":.*?@ "}; {printf "\033[32m%-20s\033[0m - %s\n", $$1, $$2}'
 
-#clean: @ Cleanup
-clean:
-	@rm -rf ./publisher/bin/ ./publisher/obj/ ./subscriber/bin/ ./subscriber/obj/
-
-#build: @ Build
-build: clean
-	cd publisher && dotnet build publisher.csproj && cd ..
-	cd subscriber && dotnet build subscriber.csproj && cd ..
-
 #release: @ Create and push a new tag
 release:
 	$(eval NT=$(NEWTAG))
@@ -35,13 +26,27 @@ release:
 version:
 	@echo $(shell git describe --tags --abbrev=0)
 
+#clean: @ Cleanup
+clean:
+	@rm -rf ./publisher/bin/ ./publisher/obj/ ./subscriber/bin/ ./subscriber/obj/
+
+#build: @ Build
+build: clean
+	cd publisher && dotnet build publisher.csproj && cd ..
+	cd subscriber && dotnet build subscriber.csproj && cd .. 
+
+#build-images: @ Build Docker images
+build-images:
+	cd publisher && docker buildx build --load -t publisher -f Dockerfile . && cd ..
+	cd subscriber && docker buildx build --load -t subscriber -f Dockerfile . && cd ..
+
 #runk: @ Run Kafka
 runk:
-	@ docker compose up -d
+	@ docker compose --file docker-compose-kafka.yml up  -d 
 
 #stopk: @ Stop Kafka
 stopk:
-	@ docker compose down
+	@ docker compose --file docker-compose-kafka.yml down --remove-orphans --volumes
 
 #runp: @ Run publisher
 runp: build
@@ -50,6 +55,15 @@ runp: build
 #runs: @ Run subscriber
 runs: build
 	dapr run --app-id subscriber --app-port 5141 --components-path ./subscriber/components -- dotnet run --project ./subscriber/subscriber.csproj
+
+#runall: @ Run Kafka + Publisher + Consumer
+runall:
+	docker compose build
+	docker compose up
+
+#stopall: @ Stop Kafka + Publisher + Consumer
+stopall:
+	docker compose down --remove-orphans --volumes
 
 # upgrade outdated https://github.com/NuGet/Home/issues/4103
 #upgrade: @ Upgrade outdated packages

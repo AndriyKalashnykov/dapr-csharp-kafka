@@ -7,21 +7,19 @@ This example shows how to run Dapr in CSharp with Kafka and Minimal APIs.
 First, make sure you have Docker installed so you can run Kafka locally.
 
 ```bash
-docker compose -f docker-compose.yml up
+make runk
 ```
 
 ### Run the subscriber
 
 ```bash
-cd subscriber
-dapr run --app-id subscriber --app-port 5141 --resources-path ./components -- dotnet run
+make runs
 ```
 
 ### Run the publisher
 
 ```bash
-cd publisher
-dapr run --app-id publisher --resources-path ./components -- dotnet run
+make runp
 ```
 
 ### Observe the event
@@ -29,5 +27,5 @@ dapr run --app-id publisher --resources-path ./components -- dotnet run
 In your subscriber app you should see:
 
 ```bash
-== APP == 17
+== APP == Id=8beb4163-1548-43ea-bea3-7726bc584131, Data=2025-09-17T12:28:31.2696216Z
 ```
