@@ -37,5 +37,7 @@ links
 
 ### References
 
+* [Kafka pubsub connection refused](https://github.com/dapr/components-contrib/issues/3113)
+* [Dapr .NET Workflow examples](https://github.com/olitomlinson/dapr-workflow-testing)
 * [Dapr Globo Tickets .NET Example](https://github.com/XpiritBV/azure-container-apps-workshop/tree/main/src/globo-tickets-dapr)
 * [DAPR .NET Examples + Docker Compose](https://github.com/Sen-Gupta/nebulagraph/tree/main/src/examples)
