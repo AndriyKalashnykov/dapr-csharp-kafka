@@ -37,11 +37,6 @@ jobs:
         with:
           dotnet-version: ${{ steps.sdk.outputs.sdk }}
 
-      - name: Restore
-        run: |
-          dotnet restore ./publisher/publisher.csproj
-          dotnet restore ./subscriber/subscriber.csproj
-
       - name: Build
         run: make build
         

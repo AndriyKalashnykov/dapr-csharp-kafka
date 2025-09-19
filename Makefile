@@ -32,6 +32,8 @@ clean:
 
 #build: @ Build
 build: clean
+	dotnet restore ./publisher/publisher.csproj
+	dotnet restore ./subscriber/subscriber.csproj
 	cd publisher && dotnet build publisher.csproj && cd ..
 	cd subscriber && dotnet build subscriber.csproj && cd .. 
 
