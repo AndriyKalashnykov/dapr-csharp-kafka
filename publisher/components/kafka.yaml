@@ -7,6 +7,14 @@ spec:
   version: v1
   metadata:
     - name: brokers
-      value: "localhost:9092"
+      value: "kafka:29092"
+    - name: consumerGroup
+      value: "{namespace}"
     - name: authType
       value: "none"
+    - name: authRequired
+      value: "false"
+    - name: clientID
+      value: "publisher-client"
+    - name: disableTls # Optional. Disable TLS. This is not safe for production!! You should read the `Mutual TLS` section for how to use TLS.
+      value: "true"

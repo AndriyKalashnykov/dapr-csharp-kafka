@@ -26,15 +26,54 @@ internal class Program
         {
             try
             {
-                var eventData = new EventData(
-                    Id: Guid.NewGuid().ToString(),
-                    Data: DateTime.UtcNow
-                );
-                
-                await client.PublishEventAsync(pubsubName, topicName, eventData);
-                Console.WriteLine($"Published event: Id={eventData.Id}, Data={eventData.Data:o}");
-                
-                await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+                int retryCount = int.Parse(Environment.GetEnvironmentVariable("RETRY_COUNT") ?? "5");
+                int retryDelay = int.Parse(Environment.GetEnvironmentVariable("RETRY_DELAY") ?? "2");
+
+                for (int i = 0; i < retryCount; i++)
+                {
+                    try
+                    {
+                        // Try to connect to Dapr and Kafka
+                        await client.PublishEventAsync(pubsubName, "healthcheck", new { Message = "Health check" });
+                        Console.WriteLine("Message sent to Kafka!");
+                        await Task.Delay(10000);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Connection attempt {i+1}/{retryCount} failed: {ex.Message}");
+                        
+                        Exception? innerException = ex.InnerException;
+                        if (innerException != null)
+                        {
+                            Console.WriteLine($"Inner Exception: {innerException.Message}");
+        
+                            // Print stack trace for the inner exception
+                            Console.WriteLine($"Inner Exception Stack Trace: {innerException.StackTrace}");
+        
+                            // Check for deeper nested exceptions
+                            Exception? deeperException = innerException.InnerException;
+                            if (deeperException != null)
+                            {
+                                Console.WriteLine($"Deeper Exception: {deeperException.Message}");
+                            }
+                        }
+                        
+                        if (i < retryCount - 1)
+                        {
+                            // Exponential backoff with jitter
+                            int delayMs = retryDelay * 1000 * (int)Math.Pow(2, i);
+                            Random random = new Random();
+                            delayMs += random.Next(0, 1000);
+                            Console.WriteLine($"Retrying in {delayMs/1000} seconds...");
+                            await Task.Delay(delayMs);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Max retries reached. Continuing anyway...");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {

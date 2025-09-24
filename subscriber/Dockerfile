@@ -24,7 +24,7 @@ ENV ASPNETCORE_URLS=http://+:8080
 # && mv /usr/local/bin/daprd /usr/local/bin/daprd-bin || true
 COPY --from=publish /app/publish .
 #COPY components /components
-EXPOSE 8080
+#EXPOSE 8080
 #COPY <<'SH' /entry.sh
 ##!/usr/bin/env sh
 #set -e

@@ -10,4 +10,4 @@ spec:
     - name: redisHost
       value: redis-pubsub:6379
     - name: redisPassword
-      value: ""
+      value: "dapr_redis"

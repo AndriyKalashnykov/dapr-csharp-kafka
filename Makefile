@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := help
 
+DOCKER_COMPOSE:=docker compose --file docker-compose.yml
+
 CURRENTTAG:=$(shell git describe --tags --abbrev=0)
 NEWTAG ?= $(shell bash -c 'read -p "Please provide a new tag (currnet tag - ${CURRENTTAG}): " newtag; echo $$newtag')
 
@@ -60,11 +62,11 @@ runs: build
 
 #runall: @ Run Kafka + Publisher + Consumer
 runall: build-images
-	docker compose --file docker-compose.yml up
+	$(DOCKER_COMPOSE) up
 
 #stopall: @ Stop Kafka + Publisher + Consumer
 stopall:
-	docker compose --file docker-compose.yml down
+	docker compose --file docker-compose.yml down --remove-orphans --volumes
 
 #stop-local-dapr: @Stop local dapr
 stop-local-dapr:
@@ -77,3 +79,8 @@ upgrade:
 	@cd publisher && dotnet list package --outdated | grep -o '> \S*' | grep '[^> ]*' -o | xargs --no-run-if-empty -L 1 dotnet add package
 	@cd publisher && dotnet list package --outdated | grep -o '> \S*' | grep '[^> ]*' -o | xargs --no-run-if-empty -L 1 dotnet add package
 
+pd.logs:
+	$(DOCKER_COMPOSE) logs -f publisher-daprd
+	
+pi.logs:
+	$(DOCKER_COMPOSE) logs -f publisher-image
