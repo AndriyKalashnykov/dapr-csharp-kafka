@@ -1,5 +1,5 @@
 # https://mcr.microsoft.com/en-us/artifact/mar/dotnet/sdk/tags
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY ./ ./subscriber
@@ -16,7 +16,7 @@ RUN dotnet publish "subscriber.csproj" --no-restore -c Release -o /app/publish /
 #RUN dotnet publish subscriber/subscriber.csproj -c Release -o /app/publish --no-restore
 
 # https://mcr.microsoft.com/en-us/artifact/mar/dotnet/aspnet/tags
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 #ENV ASPNETCORE_URLS=http://+:8080
 #RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/* \
