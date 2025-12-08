@@ -34,7 +34,7 @@ internal class Program
                     try
                     {
                         // Try to connect to Dapr and Kafka
-                        await client.PublishEventAsync(pubsubName, "healthcheck", new { Message = "Health check" });
+                        await client.PublishEventAsync(pubsubName, topicName, new { Message = "Health check" });
                         Console.WriteLine("Message sent to Kafka!");
                         await Task.Delay(10000);
                         break;

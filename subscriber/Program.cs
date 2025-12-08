@@ -1,27 +1,39 @@
 using System.Text.Json.Serialization;
 using Dapr;
-using Dapr.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
 var app = builder.Build();
+
+// Dapr configurations
 app.UseCloudEvents();
 
-// Allow Dapr to discover code-based subscriptions
 app.MapSubscribeHandler();
 
-// Simple health/home endpoint
-app.MapGet("/", () => "Hello World!");
+app.MapPost("/event", [Topic("mypubsub", "event")] (ILogger<Program> logger, Message msg) => {
+    Console.WriteLine($"{msg.Id}: {msg.Data}");
+    return Results.Ok();
+});
 
-// Dapr will POST messages here. We accept EventData and print both fields.
-app.MapPost("/event", (EventData evt) =>
+
+// Alternative endpoint - commented out to avoid duplicate subscriptions
+/*
+app.MapPost("/event", async (HttpRequest request, EventData evt) =>
 {
+    request.EnableBuffering();
+    using var reader = new StreamReader(request.Body, leaveOpen: true);
+    var body = await reader.ReadToEndAsync();
+    request.Body.Position = 0;
+
+    Console.WriteLine(body);
     Console.WriteLine($"Id={evt.Id}, Data={evt.Data:o}");
     return Results.Ok();
 }).WithTopic("mypubsub", "event");
+*/
 
 app.Run();
 
-public record EventData(
-    [property: JsonPropertyName("Id")] string Id,
-    [property: JsonPropertyName("Data")] DateTime Data
+public record Message(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("data")] DateTime Data
 );

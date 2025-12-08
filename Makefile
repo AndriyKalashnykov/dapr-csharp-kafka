@@ -70,17 +70,23 @@ stopall:
 
 #stop-local-dapr: @Stop local dapr
 stop-local-dapr:
-	docker stop redis dapr-scheduler dapr-placement dapr_redis dapr_zipkin
+	docker stop redis dapr_scheduler dapr_placement dapr_redis dapr_zipkin
 
 
 # upgrade outdated https://github.com/NuGet/Home/issues/4103
 #upgrade: @ Upgrade outdated packages
 upgrade:
 	@cd publisher && dotnet list package --outdated | grep -o '> \S*' | grep '[^> ]*' -o | xargs --no-run-if-empty -L 1 dotnet add package
-	@cd publisher && dotnet list package --outdated | grep -o '> \S*' | grep '[^> ]*' -o | xargs --no-run-if-empty -L 1 dotnet add package
+	@cd subscriber && dotnet list package --outdated | grep -o '> \S*' | grep '[^> ]*' -o | xargs --no-run-if-empty -L 1 dotnet add package
 
 pd.logs:
 	$(DOCKER_COMPOSE) logs -f publisher-daprd
 	
 pi.logs:
 	$(DOCKER_COMPOSE) logs -f publisher-image
+	
+post:
+	@curl -s -X GET http://localhost:9080/event
+
+get:
+	@curl -s -X POST http://localhost:9080/A -H "Content-Type: application/json" -d '{}' | jq .
