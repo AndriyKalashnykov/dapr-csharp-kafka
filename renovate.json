@@ -61,5 +61,9 @@
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
   "dependencyDashboard": true,
-  "gitAuthor": "Renovate Bot <bot@renovateapp.com>"
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "merge",
+  "platformAutomerge": true
 }
