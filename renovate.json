@@ -1,14 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    ":dependencyDashboard",
+    ":semanticCommitType(chore)",
     ":semanticPrefixFixDepsChoreOthers",
-    "group:dotNetCore",
-    "group:monorepos",
-    "group:recommended",
-    "replacements:all",
-    "workarounds:all",
     "config:best-practices",
+    "group:dotNetCore",
     "schedule:daily"
   ],
   "enabledManagers": [
@@ -56,14 +52,32 @@
         "github-actions"
       ],
       "groupName": "Pipeline dependencies"
+    },
+    {
+      "description": "Wait 3 days before automerging major updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "minimumReleaseAge": "3 days"
     }
   ],
-  "prConcurrentLimit": 0,
+  "prConcurrentLimit": 50,
   "prHourlyLimit": 0,
   "dependencyDashboard": true,
   "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
   "automerge": true,
-  "automergeType": "pr",
-  "automergeStrategy": "merge",
-  "platformAutomerge": true
+  "automergeType": "branch",
+  "automergeStrategy": "squash",
+  "platformAutomerge": true,
+  "commitBody": "Signed-off-by: Renovate Bot <bot@renovateapp.com>",
+  "ignoreTests": false,
+  "commitMessageAction": "update",
+  "commitMessagePrefix": "chore(all): ",
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security"
+    ],
+    "automerge": true,
+    "minimumReleaseAge": "0 days"
+  }
 }
