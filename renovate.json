@@ -7,9 +7,9 @@
     "group:dotNetCore",
     "schedule:daily"
   ],
-  "enabledManagers": [
-    "github-actions",
-    "nuget"
+  "enabledCategories": [
+    "ci",
+    "dotnet"
   ],
   "labels": [
     "dependencies"
@@ -48,8 +48,8 @@
       ]
     },
     {
-      "matchManagers": [
-        "github-actions"
+      "matchCategories": [
+        "ci"
       ],
       "groupName": "Pipeline dependencies"
     },

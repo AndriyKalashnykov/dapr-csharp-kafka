@@ -7,7 +7,6 @@ NEWTAG ?= $(shell bash -c 'read -p "Please provide a new tag (currnet tag - ${CU
 
 #help: @ List available tasks
 help:
-	@clear
 	@echo "Usage: make COMMAND"
 	@echo "Commands :"
 	@grep -E '[a-zA-Z\.\-]+:.*?@ .*$$' $(MAKEFILE_LIST)| tr -d '#' | awk 'BEGIN {FS = ":.*?@ "}; {printf "\033[32m%-20s\033[0m - %s\n", $$1, $$2}'
@@ -90,3 +89,5 @@ post:
 
 get:
 	@curl -s -X POST http://localhost:9080/A -H "Content-Type: application/json" -d '{}' | jq .
+
+.PHONY: help release version clean build build-images runk stopk runp runs runall stopall stop-local-dapr upgrade pd.logs pi.logs post get

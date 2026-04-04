@@ -1,5 +1,8 @@
 # CSharp Dapr Sample with Kafka
 
+[![CI](https://github.com/AndriyKalashnykov/dapr-csharp-kafka/actions/workflows/ci.yml/badge.svg)](https://github.com/AndriyKalashnykov/dapr-csharp-kafka/actions/workflows/ci.yml)
+[![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)
+
 This example shows how to run Dapr in CSharp with Kafka and Minimal APIs.
 
 ### Run Kafka
